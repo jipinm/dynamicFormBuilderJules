@@ -1,42 +1,191 @@
-#root {
-  max-width: 1280px;
+/* General App Styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f7f6;
+  color: #333;
+  line-height: 1.6;
+}
+
+.app-container {
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 20px;
+}
+
+.app-header {
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.app-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 2em;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.schema-selector-container {
+  margin-top: 10px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.schema-selector-container label {
+  margin-right: 10px;
+  font-size: 1em;
 }
 
-.card {
-  padding: 2em;
+#schema-select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #bdc3c7;
+  font-size: 0.9em;
+  min-width: 250px;
 }
 
-.read-the-docs {
-  color: #888;
+.app-main {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.loading-message,
+.error-message,
+.initial-prompt {
+  text-align: center;
+  font-size: 1.2em;
+  padding: 20px;
+}
+
+.error-message {
+  color: #e74c3c;
+  background-color: #fdd;
+  border: 1px solid #e74c3c;
+  border-radius: 4px;
+}
+
+.app-footer {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+  font-size: 0.9em;
+  color: #7f8c8d;
+}
+
+/* Form specific styles (can be moved to a dedicated CSS file for the form components) */
+.schema-form-renderer {
+  /* Styles for the form container if needed */
+}
+
+.dynamic-section {
+  border: 1px solid #ddd !important; /* Overriding inline for consistency */
+  margin: 20px 0 !important;
+  padding: 20px !important;
+  background-color: #fdfdfd !important;
+  border-radius: 6px;
+}
+
+.dynamic-section h2 {
+  margin-top: 0;
+  color: #34495e;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+}
+
+.dynamic-field-group {
+  border: 1px solid #e0e0e0 !important;
+  margin: 15px 0 !important; /* Reduced from 10px from inline */
+  padding: 15px !important; /* Reduced from 10px from inline */
+  background-color: #f9f9f9 !important; /* Ensure this is applied */
+  border-radius: 4px;
+}
+
+.dynamic-field-group h4 {
+  margin-top: 0;
+  color: #2980b9;
+}
+
+.dynamic-field {
+  margin: 15px 0px !important; /* Standardized margin */
+  padding: 15px !important; /* Standardized padding */
+  border-radius: 4px !important;
+  background-color: #ffffff !important; /* Ensure this is distinct */
+  border: 1px solid #ccc !important; /* From inline */
+}
+
+.dynamic-field label {
+  display: block;
+  margin-bottom: 8px; /* Increased spacing */
+  font-weight: bold;
+  font-size: 0.95em; /* Slightly larger */
+  color: #333;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: calc(100% - 20px); /* Account for padding */
+  padding: 10px;
+  margin-bottom: 5px; /* Space below input before help text or error */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Important for width calculation */
+  font-size: 1em;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  outline: none;
+}
+
+.dynamic-field .field-errors div {
+  color: #c0392b; /* Darker red for errors */
+  font-size: 0.85em;
+  margin-top: 5px;
+}
+
+.dynamic-field small { /* Help text */
+  font-size: 0.85em;
+  color: #555;
+  display: block;
+  margin-top: 6px;
+}
+
+button[type="submit"] {
+  background-color: #27ae60;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.1em;
+  transition: background-color 0.2s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #229954;
+}
+
+/* Style for repeatable group button if added */
+.dynamic-field-group button {
+  background-color: #3498db;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.dynamic-field-group button:hover {
+  background-color: #2980b9;
 }
