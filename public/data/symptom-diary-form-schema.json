@@ -1,0 +1,206 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "JSON Schema for Patient Symptom Diary Form - Test Schema 5",
+  "note": "Sample schema maintaining DCDCS structure for daily symptom tracking",
+  
+  "FieldDefinition": {
+    "id": "pain_score",
+    "name": "Pain Score",
+    "label": "Pain Level",
+    "description": "Pain intensity on a scale of 0-10",
+    "dataType": "integer",
+    "unit": null,
+    "precision": null,
+    "required": true,
+    "placeholder": "Select pain level",
+    "helpText": "0 = No pain, 10 = Worst possible pain",
+    "defaultValue": null,
+    "options": [
+      {"value": "0", "label": "0 - No pain"},
+      {"value": "1", "label": "1"},
+      {"value": "2", "label": "2"},
+      {"value": "3", "label": "3"},
+      {"value": "4", "label": "4"},
+      {"value": "5", "label": "5 - Moderate pain"},
+      {"value": "6", "label": "6"},
+      {"value": "7", "label": "7"},
+      {"value": "8", "label": "8"},
+      {"value": "9", "label": "9"},
+      {"value": "10", "label": "10 - Worst pain"}
+    ],
+    "codedValue": {
+      "system": "LOINC",
+      "code": "38208-5",
+      "display": "Pain severity - Reported"
+    },
+    "validationRules": [
+      {
+        "id": "pain_range",
+        "type": "range",
+        "min": 0,
+        "max": 10,
+        "message": "Pain score must be between 0-10",
+        "severity": "error"
+      }
+    ],
+    "calculationRules": [],
+    "displayRules": [
+      {
+        "condition": {
+          "field": "experiencing_symptoms",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "dataSource": {
+      "allowedSources": ["manual", "patient_app"],
+      "deviceIntegration": null
+    },
+    "auditMetadata": {
+      "createdBy": "admin",
+      "createdAt": "2025-06-13T10:00:00Z",
+      "version": "1.0",
+      "changeLog": []
+    }
+  },
+
+  "FieldGroupTemplate": {
+    "id": "symptom_assessment_group",
+    "name": "Symptom Assessment",
+    "description": "Daily symptom tracking fields",
+    "repeatable": false,
+    "maxInstances": 1,
+    "minInstances": 1,
+    "fields": [
+      "pain_score",
+      "pain_location",
+      "fatigue_level",
+      "nausea_severity",
+      "appetite_level",
+      "sleep_quality",
+      "mood_rating",
+      "activity_level"
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "field": "diary_date",
+          "operator": "exists",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "validationRules": [
+      {
+        "id": "all_symptoms_rated",
+        "type": "required",
+        "condition": "experiencing_symptoms == true",
+        "message": "Please rate all symptoms when experiencing symptoms",
+        "severity": "warning"
+      }
+    ],
+    "calculationRules": [
+      {
+        "id": "symptom_burden_score",
+        "targetField": "total_symptom_score",
+        "formula": "pain_score + fatigue_level + nausea_severity + (10 - appetite_level) + (10 - sleep_quality)",
+        "dependencies": ["pain_score", "fatigue_level", "nausea_severity", "appetite_level", "sleep_quality"]
+      }
+    ]
+  },
+
+  "SectionTemplate": {
+    "id": "daily_diary_section",
+    "name": "Daily Symptom Diary",
+    "description": "Patient-reported daily symptoms",
+    "displayOrder": 1,
+    "collapsible": false,
+    "defaultExpanded": true,
+    "fieldGroups": [
+      "symptom_assessment_group",
+      "medication_taken_group",
+      "activity_impact_group"
+    ],
+    "individualFields": [
+      "diary_date",
+      "diary_time",
+      "experiencing_symptoms",
+      "overall_wellbeing",
+      "additional_notes"
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "studyEvent": "daily_diary",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "completionRules": {
+      "requiredFieldGroups": ["symptom_assessment_group"],
+      "requiredFields": ["diary_date", "experiencing_symptoms", "overall_wellbeing"],
+      "validationLevel": "warning"
+    }
+  },
+
+  "FormTemplate": {
+    "id": "patient_symptom_diary_form",
+    "name": "Patient Symptom Diary",
+    "description": "Daily patient-reported symptom tracking form",
+    "version": "1.0",
+    "category": "patient_reported",
+    "estimatedDuration": 5,
+    "sections": [
+      {
+        "sectionId": "daily_diary_section",
+        "displayOrder": 1,
+        "required": true
+      },
+      {
+        "sectionId": "quality_of_life_section",
+        "displayOrder": 2,
+        "required": false
+      }
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "patientAge": {
+            "operator": ">=",
+            "value": 12
+          }
+        },
+        "visible": true
+      }
+    ],
+    "completionRules": {
+      "requiredSections": ["daily_diary_section"],
+      "allowPartialSave": true,
+      "autoSaveInterval": 60
+    },
+    "navigationRules": {
+      "allowBackNavigation": false,
+      "showProgressIndicator": true,
+      "skipLogic": [
+        {
+          "condition": {
+            "field": "experiencing_symptoms",
+            "operator": "equals",
+            "value": false
+          },
+          "skipSection": "detailed_symptom_section"
+        }
+      ]
+    },
+    "attachments": {
+      "allowedTypes": ["image", "audio"],
+      "maxFileSize": "10MB",
+      "maxTotalSize": "20MB"
+    }
+  }
+}

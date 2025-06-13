@@ -1,0 +1,194 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "JSON Schema for Medication History Form - Test Schema 2",
+  "note": "Sample schema maintaining DCDCS structure for medication tracking",
+  
+  "FieldDefinition": {
+    "id": "medication_name",
+    "name": "Medication Name",
+    "label": "Medication",
+    "description": "Name of the medication",
+    "dataType": "string",
+    "unit": null,
+    "precision": null,
+    "required": true,
+    "placeholder": "Enter medication name",
+    "helpText": "Generic or brand name",
+    "defaultValue": null,
+    "options": null,
+    "codedValue": {
+      "system": "RxNorm",
+      "code": null,
+      "display": null
+    },
+    "validationRules": [
+      {
+        "id": "name_format",
+        "type": "pattern",
+        "pattern": "^[a-zA-Z0-9\\s\\-]+$",
+        "message": "Medication name contains invalid characters",
+        "severity": "warning"
+      }
+    ],
+    "calculationRules": [],
+    "displayRules": [
+      {
+        "condition": {
+          "field": "taking_medications",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "dataSource": {
+      "allowedSources": ["manual", "ehr"],
+      "deviceIntegration": null
+    },
+    "auditMetadata": {
+      "createdBy": "admin",
+      "createdAt": "2025-06-13T08:30:00Z",
+      "version": "1.0",
+      "changeLog": []
+    }
+  },
+
+  "FieldGroupTemplate": {
+    "id": "medication_entry_group",
+    "name": "Medication Entry",
+    "description": "Individual medication details",
+    "repeatable": true,
+    "maxInstances": 20,
+    "minInstances": 0,
+    "fields": [
+      "medication_name",
+      "dosage",
+      "dosage_unit",
+      "frequency",
+      "start_date",
+      "end_date",
+      "indication",
+      "prescriber"
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "field": "taking_medications",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "validationRules": [
+      {
+        "id": "date_consistency",
+        "type": "cross_field",
+        "condition": "end_date == null || end_date >= start_date",
+        "message": "End date must be after start date",
+        "severity": "error"
+      }
+    ],
+    "calculationRules": [
+      {
+        "id": "duration_days",
+        "targetField": "treatment_duration",
+        "formula": "dateDiff(start_date, end_date || today(), 'days')",
+        "dependencies": ["start_date", "end_date"]
+      }
+    ]
+  },
+
+  "SectionTemplate": {
+    "id": "current_medications_section",
+    "name": "Current Medications",
+    "description": "Currently active medications",
+    "displayOrder": 1,
+    "collapsible": true,
+    "defaultExpanded": true,
+    "fieldGroups": [
+      "medication_entry_group"
+    ],
+    "individualFields": [
+      "taking_medications",
+      "medication_adherence",
+      "last_review_date"
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "studyEvent": "any",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "completionRules": {
+      "requiredFieldGroups": [],
+      "requiredFields": ["taking_medications"],
+      "validationLevel": "warning"
+    }
+  },
+
+  "FormTemplate": {
+    "id": "medication_history_form",
+    "name": "Medication History",
+    "description": "Complete medication history and current medications",
+    "version": "1.0",
+    "category": "medical_history",
+    "estimatedDuration": 15,
+    "sections": [
+      {
+        "sectionId": "current_medications_section",
+        "displayOrder": 1,
+        "required": true
+      },
+      {
+        "sectionId": "past_medications_section",
+        "displayOrder": 2,
+        "required": false
+      },
+      {
+        "sectionId": "allergies_section",
+        "displayOrder": 3,
+        "required": true
+      }
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "patientAge": {
+            "operator": ">=",
+            "value": 0
+          }
+        },
+        "visible": true
+      }
+    ],
+    "completionRules": {
+      "requiredSections": ["current_medications_section", "allergies_section"],
+      "allowPartialSave": true,
+      "autoSaveInterval": 30
+    },
+    "navigationRules": {
+      "allowBackNavigation": true,
+      "showProgressIndicator": true,
+      "skipLogic": [
+        {
+          "condition": {
+            "field": "taking_medications",
+            "operator": "equals",
+            "value": false
+          },
+          "skipSection": "current_medications_details"
+        }
+      ]
+    },
+    "attachments": {
+      "allowedTypes": ["image", "document"],
+      "maxFileSize": "10MB",
+      "maxTotalSize": "30MB"
+    }
+  }
+}

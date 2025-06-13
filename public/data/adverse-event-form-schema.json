@@ -1,0 +1,209 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "JSON Schema for Adverse Event Report Form - Test Schema 3",
+  "note": "Sample schema maintaining DCDCS structure for adverse event reporting",
+  
+  "FieldDefinition": {
+    "id": "event_severity",
+    "name": "Event Severity",
+    "label": "Severity",
+    "description": "Severity grade of the adverse event",
+    "dataType": "select",
+    "unit": null,
+    "precision": null,
+    "required": true,
+    "placeholder": "Select severity",
+    "helpText": "Grade 1 (Mild) to Grade 5 (Death)",
+    "defaultValue": null,
+    "options": [
+      {"value": "1", "label": "Grade 1 - Mild"},
+      {"value": "2", "label": "Grade 2 - Moderate"},
+      {"value": "3", "label": "Grade 3 - Severe"},
+      {"value": "4", "label": "Grade 4 - Life-threatening"},
+      {"value": "5", "label": "Grade 5 - Death"}
+    ],
+    "codedValue": {
+      "system": "CTCAE",
+      "code": null,
+      "display": null
+    },
+    "validationRules": [
+      {
+        "id": "severity_required",
+        "type": "required",
+        "message": "Severity grade is required",
+        "severity": "error"
+      }
+    ],
+    "calculationRules": [],
+    "displayRules": [
+      {
+        "condition": {
+          "field": "event_occurred",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "dataSource": {
+      "allowedSources": ["manual"],
+      "deviceIntegration": null
+    },
+    "auditMetadata": {
+      "createdBy": "admin",
+      "createdAt": "2025-06-13T09:00:00Z",
+      "version": "1.0",
+      "changeLog": []
+    }
+  },
+
+  "FieldGroupTemplate": {
+    "id": "event_details_group",
+    "name": "Event Details",
+    "description": "Detailed information about the adverse event",
+    "repeatable": false,
+    "maxInstances": 1,
+    "minInstances": 1,
+    "fields": [
+      "event_term",
+      "event_description",
+      "start_date",
+      "end_date",
+      "event_severity",
+      "event_outcome",
+      "action_taken",
+      "relationship_to_study"
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "field": "event_occurred",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "validationRules": [
+      {
+        "id": "outcome_consistency",
+        "type": "cross_field",
+        "condition": "event_severity == '5' ? event_outcome == 'fatal' : true",
+        "message": "Grade 5 severity must have fatal outcome",
+        "severity": "error"
+      }
+    ],
+    "calculationRules": [
+      {
+        "id": "event_duration",
+        "targetField": "duration_days",
+        "formula": "end_date ? dateDiff(start_date, end_date, 'days') : 'ongoing'",
+        "dependencies": ["start_date", "end_date"]
+      }
+    ]
+  },
+
+  "SectionTemplate": {
+    "id": "adverse_event_section",
+    "name": "Adverse Event Information",
+    "description": "Complete adverse event details",
+    "displayOrder": 1,
+    "collapsible": false,
+    "defaultExpanded": true,
+    "fieldGroups": [
+      "event_details_group",
+      "medical_intervention_group",
+      "reporting_info_group"
+    ],
+    "individualFields": [
+      "event_occurred",
+      "serious_event",
+      "unexpected_event"
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "studyEvent": "any_followup",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "completionRules": {
+      "requiredFieldGroups": ["event_details_group", "reporting_info_group"],
+      "requiredFields": ["event_occurred"],
+      "validationLevel": "error"
+    }
+  },
+
+  "FormTemplate": {
+    "id": "adverse_event_form",
+    "name": "Adverse Event Report",
+    "description": "Comprehensive adverse event reporting form",
+    "version": "1.0",
+    "category": "safety",
+    "estimatedDuration": 20,
+    "sections": [
+      {
+        "sectionId": "adverse_event_section",
+        "displayOrder": 1,
+        "required": true
+      },
+      {
+        "sectionId": "concomitant_medications_section",
+        "displayOrder": 2,
+        "required": false
+      },
+      {
+        "sectionId": "follow_up_section",
+        "displayOrder": 3,
+        "required": false
+      }
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "patientAge": {
+            "operator": ">=",
+            "value": 0
+          }
+        },
+        "visible": true
+      }
+    ],
+    "completionRules": {
+      "requiredSections": ["adverse_event_section"],
+      "allowPartialSave": false,
+      "autoSaveInterval": 15
+    },
+    "navigationRules": {
+      "allowBackNavigation": true,
+      "showProgressIndicator": true,
+      "skipLogic": [
+        {
+          "condition": {
+            "field": "event_occurred",
+            "operator": "equals",
+            "value": false
+          },
+          "skipSection": "event_details_section"
+        },
+        {
+          "condition": {
+            "field": "serious_event",
+            "operator": "equals",
+            "value": false
+          },
+          "skipSection": "serious_event_criteria_section"
+        }
+      ]
+    },
+    "attachments": {
+      "allowedTypes": ["image", "document", "audio"],
+      "maxFileSize": "15MB",
+      "maxTotalSize": "50MB"
+    }
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "JSON Schema for Patient Demographics Form - Test Schema 1",
+  "note": "Sample schema maintaining DCDCS structure for demographics collection",
+  
+  "FieldDefinition": {
+    "id": "patient_age",
+    "name": "Patient Age",
+    "label": "Age",
+    "description": "Patient's age at enrollment",
+    "dataType": "integer",
+    "unit": "years",
+    "precision": null,
+    "required": true,
+    "placeholder": "Enter age in years",
+    "helpText": "Age must be between 18-100 years",
+    "defaultValue": null,
+    "options": null,
+    "codedValue": {
+      "system": "LOINC",
+      "code": "21612-7",
+      "display": "Age Time Patient Reported"
+    },
+    "validationRules": [
+      {
+        "id": "age_range",
+        "type": "range",
+        "min": 18,
+        "max": 100,
+        "message": "Age must be between 18-100 years",
+        "severity": "error"
+      }
+    ],
+    "calculationRules": [],
+    "displayRules": [
+      {
+        "condition": {
+          "field": "consent_given",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "dataSource": {
+      "allowedSources": ["manual"],
+      "deviceIntegration": null
+    },
+    "auditMetadata": {
+      "createdBy": "admin",
+      "createdAt": "2025-06-13T08:00:00Z",
+      "version": "1.0",
+      "changeLog": []
+    }
+  },
+
+  "FieldGroupTemplate": {
+    "id": "personal_info_group",
+    "name": "Personal Information",
+    "description": "Basic personal information fields",
+    "repeatable": false,
+    "maxInstances": 1,
+    "minInstances": 1,
+    "fields": [
+      "first_name",
+      "last_name",
+      "date_of_birth",
+      "patient_age",
+      "gender"
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "field": "enrollment_status",
+          "operator": "equals",
+          "value": "active"
+        },
+        "visible": true
+      }
+    ],
+    "validationRules": [
+      {
+        "id": "name_required",
+        "type": "required",
+        "condition": "first_name != null && last_name != null",
+        "message": "Both first and last name are required",
+        "severity": "error"
+      }
+    ],
+    "calculationRules": [
+      {
+        "id": "calculate_age",
+        "targetField": "patient_age",
+        "formula": "calculateAge(date_of_birth)",
+        "dependencies": ["date_of_birth"]
+      }
+    ]
+  },
+
+  "SectionTemplate": {
+    "id": "demographics_section",
+    "name": "Demographics",
+    "description": "Patient demographic information",
+    "displayOrder": 1,
+    "collapsible": false,
+    "defaultExpanded": true,
+    "fieldGroups": [
+      "personal_info_group",
+      "contact_info_group",
+      "emergency_contact_group"
+    ],
+    "individualFields": [
+      "ethnicity",
+      "race",
+      "preferred_language"
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "studyEvent": "enrollment_visit",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "completionRules": {
+      "requiredFieldGroups": ["personal_info_group", "contact_info_group"],
+      "requiredFields": ["ethnicity", "race"],
+      "validationLevel": "error"
+    }
+  },
+
+  "FormTemplate": {
+    "id": "patient_demographics_form",
+    "name": "Patient Demographics",
+    "description": "Comprehensive patient demographic information form",
+    "version": "1.0",
+    "category": "enrollment",
+    "estimatedDuration": 10,
+    "sections": [
+      {
+        "sectionId": "demographics_section",
+        "displayOrder": 1,
+        "required": true
+      },
+      {
+        "sectionId": "insurance_section",
+        "displayOrder": 2,
+        "required": false
+      }
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "patientAge": {
+            "operator": ">=",
+            "value": 18
+          }
+        },
+        "visible": true
+      }
+    ],
+    "completionRules": {
+      "requiredSections": ["demographics_section"],
+      "allowPartialSave": true,
+      "autoSaveInterval": 60
+    },
+    "navigationRules": {
+      "allowBackNavigation": true,
+      "showProgressIndicator": true,
+      "skipLogic": []
+    },
+    "attachments": {
+      "allowedTypes": ["image", "document"],
+      "maxFileSize": "5MB",
+      "maxTotalSize": "20MB"
+    }
+  }
+}

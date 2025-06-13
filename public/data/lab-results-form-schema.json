@@ -1,0 +1,210 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "JSON Schema for Laboratory Results Form - Test Schema 4",
+  "note": "Sample schema maintaining DCDCS structure for lab results entry",
+  
+  "FieldDefinition": {
+    "id": "hemoglobin_value",
+    "name": "Hemoglobin",
+    "label": "Hemoglobin (Hgb)",
+    "description": "Hemoglobin concentration in blood",
+    "dataType": "decimal",
+    "unit": "g/dL",
+    "precision": 1,
+    "required": true,
+    "placeholder": "Enter value",
+    "helpText": "Normal range: Male 13.5-17.5, Female 12.0-15.5 g/dL",
+    "defaultValue": null,
+    "options": null,
+    "codedValue": {
+      "system": "LOINC",
+      "code": "718-7",
+      "display": "Hemoglobin [Mass/volume] in Blood"
+    },
+    "validationRules": [
+      {
+        "id": "hgb_range",
+        "type": "range",
+        "min": 3.0,
+        "max": 25.0,
+        "message": "Hemoglobin value must be between 3.0-25.0 g/dL",
+        "severity": "error"
+      },
+      {
+        "id": "hgb_clinical_low",
+        "type": "range",
+        "min": 12.0,
+        "max": 25.0,
+        "message": "Hemoglobin below normal range",
+        "severity": "warning"
+      }
+    ],
+    "calculationRules": [],
+    "displayRules": [
+      {
+        "condition": {
+          "field": "hematology_panel",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "dataSource": {
+      "allowedSources": ["manual", "lab_interface"],
+      "deviceIntegration": {
+        "deviceTypes": ["sysmex_analyzer", "beckman_coulter"],
+        "mappingField": "HGB"
+      }
+    },
+    "auditMetadata": {
+      "createdBy": "admin",
+      "createdAt": "2025-06-13T09:30:00Z",
+      "version": "1.0",
+      "changeLog": []
+    }
+  },
+
+  "FieldGroupTemplate": {
+    "id": "hematology_group",
+    "name": "Hematology Panel",
+    "description": "Complete blood count results",
+    "repeatable": false,
+    "maxInstances": 1,
+    "minInstances": 1,
+    "fields": [
+      "hemoglobin_value",
+      "hematocrit_value",
+      "wbc_count",
+      "rbc_count",
+      "platelet_count",
+      "mcv_value",
+      "mch_value",
+      "mchc_value"
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "field": "hematology_panel",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "validationRules": [
+      {
+        "id": "hct_hgb_ratio",
+        "type": "cross_field",
+        "condition": "hematocrit_value / hemoglobin_value >= 2.5 && hematocrit_value / hemoglobin_value <= 3.5",
+        "message": "Hematocrit to hemoglobin ratio outside expected range",
+        "severity": "warning"
+      }
+    ],
+    "calculationRules": [
+      {
+        "id": "calc_mchc",
+        "targetField": "mchc_calculated",
+        "formula": "(hemoglobin_value / hematocrit_value) * 100",
+        "dependencies": ["hemoglobin_value", "hematocrit_value"]
+      }
+    ]
+  },
+
+  "SectionTemplate": {
+    "id": "lab_results_section",
+    "name": "Laboratory Results",
+    "description": "Clinical laboratory test results",
+    "displayOrder": 1,
+    "collapsible": true,
+    "defaultExpanded": true,
+    "fieldGroups": [
+      "hematology_group",
+      "chemistry_group",
+      "liver_function_group",
+      "renal_function_group"
+    ],
+    "individualFields": [
+      "specimen_date",
+      "specimen_time",
+      "fasting_status",
+      "lab_comments"
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "studyEvent": "any_visit",
+          "operator": "equals",
+          "value": true
+        },
+        "visible": true
+      }
+    ],
+    "completionRules": {
+      "requiredFieldGroups": [],
+      "requiredFields": ["specimen_date", "specimen_time"],
+      "validationLevel": "warning"
+    }
+  },
+
+  "FormTemplate": {
+    "id": "laboratory_results_form",
+    "name": "Laboratory Results",
+    "description": "Clinical laboratory test results entry form",
+    "version": "1.0",
+    "category": "laboratory",
+    "estimatedDuration": 10,
+    "sections": [
+      {
+        "sectionId": "lab_results_section",
+        "displayOrder": 1,
+        "required": true
+      },
+      {
+        "sectionId": "urinalysis_section",
+        "displayOrder": 2,
+        "required": false
+      },
+      {
+        "sectionId": "special_tests_section",
+        "displayOrder": 3,
+        "required": false
+      }
+    ],
+    "displayRules": [
+      {
+        "condition": {
+          "patientAge": {
+            "operator": ">=",
+            "value": 0
+          }
+        },
+        "visible": true
+      }
+    ],
+    "completionRules": {
+      "requiredSections": ["lab_results_section"],
+      "allowPartialSave": true,
+      "autoSaveInterval": 30
+    },
+    "navigationRules": {
+      "allowBackNavigation": true,
+      "showProgressIndicator": true,
+      "skipLogic": [
+        {
+          "condition": {
+            "field": "urinalysis_collected",
+            "operator": "equals",
+            "value": false
+          },
+          "skipSection": "urinalysis_results"
+        }
+      ]
+    },
+    "attachments": {
+      "allowedTypes": ["document", "image"],
+      "maxFileSize": "5MB",
+      "maxTotalSize": "25MB"
+    }
+  }
+}
